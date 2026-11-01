@@ -63,7 +63,7 @@ def http_get(url, headers=None, retries=6):
                 continue
             raise HttpError(e.code, url, body) from None
         except (urllib.error.URLError, TimeoutError, ConnectionError):
-            if attempt < retries:
+            if attempt < min(retries, 3):  # give up quickly when offline
                 time.sleep(2 ** attempt)
                 continue
             raise

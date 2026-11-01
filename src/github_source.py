@@ -41,7 +41,7 @@ def parse_github_repo(repository):
 
 
 class GitHub:
-    def __init__(self, token, max_issue_pages=100, max_event_pages=150):
+    def __init__(self, token, max_issue_pages=40, max_event_pages=60):
         self.token = token
         self.max_issue_pages = max_issue_pages
         self.max_event_pages = max_event_pages
