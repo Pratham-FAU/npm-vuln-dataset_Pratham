@@ -69,9 +69,22 @@ def http_get(url, headers=None, retries=6):
             raise
 
 
+def _cache_path(key):
+    return CACHE_DIR / (hashlib.sha1(key.encode()).hexdigest() + ".json.gz")
+
+
+def read_cached_json(key):
+    """Cached value for key, or None if it was never downloaded."""
+    path = _cache_path(key)
+    if not path.exists():
+        return None
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def cached_json(key, fetch):
     """Return fetch() result, caching it as gzipped JSON under cache/ by key."""
-    path = CACHE_DIR / (hashlib.sha1(key.encode()).hexdigest() + ".json.gz")
+    path = _cache_path(key)
     if path.exists():
         with gzip.open(path, "rt", encoding="utf-8") as f:
             return json.load(f)

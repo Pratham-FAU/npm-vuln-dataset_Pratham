@@ -17,7 +17,7 @@ import re
 import time
 import urllib.parse
 
-from util import HttpError, cached_json, format_ts, http_get, month_windows, parse_ts
+from util import HttpError, cached_json, read_cached_json, format_ts, http_get, month_windows, parse_ts
 
 API = "https://api.github.com"
 SERIES = ["issues_opened", "issues_closed", "issues_reopened", "pull_requests_opened",
@@ -41,8 +41,9 @@ def parse_github_repo(repository):
 
 
 class GitHub:
-    def __init__(self, token, max_issue_pages=40, max_event_pages=60):
+    def __init__(self, token, max_issue_pages=40, max_event_pages=60, cache_only=False):
         self.token = token
+        self.cache_only = cache_only  # use already-downloaded data only, never call GitHub
         self.max_issue_pages = max_issue_pages
         self.max_event_pages = max_event_pages
 
@@ -93,6 +94,8 @@ class GitHub:
     def fetch_activity(self, repo, since):
         """Raw activity for a repository since `since` (cached on disk)."""
         key = f"github:{repo}:{format_ts(since)}:{self.max_issue_pages}:{self.max_event_pages}"
+        if self.cache_only:
+            return read_cached_json(key)
         return cached_json(key, lambda: self._fetch_activity(repo, since))
 
     def _fetch_activity(self, repo, since):

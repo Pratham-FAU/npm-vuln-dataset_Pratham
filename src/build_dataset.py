@@ -140,6 +140,8 @@ def main():
     ap.add_argument("--packages-file", help="use this list of package names instead of sampling")
     ap.add_argument("--prediction-dates", help="comma-separated YYYY-MM-01 dates")
     ap.add_argument("--no-github", action="store_true", help="skip GitHub even if a token is set")
+    ap.add_argument("--github-cache-only", action="store_true",
+                    help="use GitHub data downloaded so far, without calling GitHub")
     args = ap.parse_args()
     sys.stdout.reconfigure(line_buffering=True)  # show progress even when output is redirected
 
@@ -164,7 +166,11 @@ def main():
         (DATA_DIR / "selected_packages.txt").write_text("\n".join(packages) + "\n")
 
     token = None if args.no_github else token_from_env()
-    github = GitHub(token) if token else None
+    if args.github_cache_only:
+        github = GitHub(None, cache_only=True)
+        print("Using only GitHub data that was already downloaded.")
+    else:
+        github = GitHub(token) if token else None
     if not github:
         print("No GITHUB_TOKEN set: GitHub issue/PR columns will be NULL.")
 
